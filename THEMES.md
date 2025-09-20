@@ -9,15 +9,6 @@ At OpenHack’25, you are only allowed to build projects in the following catego
 
 Projects don’t need to use AI — but if you want to explore AI, you can add intelligent features to these categories.
 
-
----
-
-## Challenge Category
-- **Education**  
-- **Agriculture**  
-- **Energy and Climate Change**  
-- **Health Care**  
-
 ---
 
 ## General Ideas
