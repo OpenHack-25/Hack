@@ -15,9 +15,17 @@ This is the official repository for the OpenHack’25 hackathon. All contributor
 
 ---
 
+## Rules of the Game
+
+1. **Team Up** – Each team must have Minimum **2 members** and maximum **3 members**.  
+2. **Choose Wisely** – You can only join **one team**.  
+3. **Final Commitment** – Once registration closes, **no team changes are allowed**.  
+4. **Bring Your Gear** – Ensure you bring your **laptop** fully charged for the hackathon.  
+5. **Play Nice** – Organizers reserve the right to **disqualify teams** for unsportsmanlike behavior.
+
+---
 ## Important Dates
 - Hackathon: Oct 14, 2025
-- Conference + Awards: Oct 16, 2025
 
 ---
 
@@ -39,6 +47,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 3. Build your project (fork → create → submit)
 4. Submit using the Submission Form (GitHub Issue)
 5. Judges will review your work
+
+
 
 ---
 
