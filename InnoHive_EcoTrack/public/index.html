@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Personal Carbon Footprint Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🌿 EcoTrack</h1>
+                <p>Track Your Carbon Footprint</p>
+            </div>
+            
+            <div id="loginForm" class="auth-form">
+                <h2>Welcome Back</h2>
+                <input type="text" id="loginUsername" placeholder="Username" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="login()" class="btn-primary">Login</button>
+                <p class="toggle-auth">Don't have an account? <a href="#" onclick="toggleAuthForm()">Sign Up</a></p>
+            </div>
+            
+            <div id="signupForm" class="auth-form" style="display:none;">
+                <h2>Create Account</h2>
+                <input type="text" id="signupUsername" placeholder="Username" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required>
+                <button onclick="signup()" class="btn-primary">Sign Up</button>
+                <p class="toggle-auth">Already have an account? <a href="#" onclick="toggleAuthForm()">Login</a></p>
+            </div>
+            
+            <div id="authMessage" class="auth-message"></div>
+        </div>
+    </div>
+    <form id="userForm">
+  <input type="text" id="name" placeholder="Name" required />
+  <input type="email" id="email" placeholder="Email" required />
+  <button type="submit">Add User</button>
+</form>
+
+<script>
+  document.getElementById("userForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+
+    const response = await fetch("http://localhost:3000/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email }),
+    });
+
+    const result = await response.json();
+    alert(result.message);
+  });
+</script>
+
+    <div id="mainApp" class="main-app" style="display:none;">
+        <nav class="navbar">
+            <div class="nav-brand">🌿 EcoTrack</div>
+            <div class="nav-links">
+                <a href="#home" onclick="scrollToSection('home')">Home</a>
+                <a href="#calculator" onclick="scrollToSection('calculator')">Calculator</a>
+                <a href="#dashboard" onclick="scrollToSection('dashboard')">Dashboard</a>
+            </div>
+            <div class="nav-actions">
+                <button onclick="toggleDarkMode()" class="icon-btn" title="Toggle Dark Mode">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <button onclick="logout()" class="btn-secondary">Logout</button>
+            </div>
+        </nav>
+
+        <section id="home" class="section hero-section">
+            <div class="container">
+                <h1 class="hero-title">Welcome to EcoTrack</h1>
+                <p class="hero-subtitle">Your personal carbon footprint tracker!</p>
+                <p class="hero-description">Enter your daily habits and discover how small actions can make a big impact. 🌱</p>
+                <div class="motivational-quote" id="dailyQuote">
+                    "The greatest threat to our planet is the belief that someone else will save it."
+                </div>
+                <button onclick="scrollToSection('calculator')" class="btn-primary btn-large">Start Tracking</button>
+            </div>
+        </section>
+
+        <section id="calculator" class="section calculator-section">
+            <div class="container">
+                <h2 class="section-title">Carbon Footprint Calculator</h2>
+                <p class="section-subtitle">Track your daily carbon emissions</p>
+                
+                <div class="calculator-grid">
+                    <div class="input-card">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 17h14M3 6h18M6 10h12M8 14h8"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                        </div>
+                        <label for="transport">🚗 Transportation (km/day)</label>
+                        <input type="number" id="transport" min="0" placeholder="e.g., 50" required>
+                    </div>
+                    
+                    <div class="input-card">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <label for="meals">🍔 Meals per Day</label>
+                        <input type="number" id="meals" min="0" placeholder="e.g., 3" required>
+                    </div>
+                    
+                    <div class="input-card">
+                        <div class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                        <label for="electricity">💡 Electricity Usage (kWh/day)</label>
+                        <input type="number" id="electricity" min="0" placeholder="e.g., 15" required>
+                    </div>
+                </div>
+                
+                <button onclick="calculateCarbon()" class="btn-primary btn-large">Calculate Footprint</button>
+                
+                <div id="results" class="results-container" style="display:none;">
+                    <div class="results-card">
+                        <h3>Your Carbon Footprint</h3>
+                        <div class="carbon-value">
+                            <span id="carbonValue">0</span> <span class="unit">kg CO₂/day</span>
+                        </div>
+                        <div id="tipsContainer" class="tips-container"></div>
+                        <button onclick="saveToLocalStorage()" class="btn-primary">Save to Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="section dashboard-section">
+            <div class="container">
+                <h2 class="section-title">Your Dashboard</h2>
+                <p class="section-subtitle">Track your progress over time</p>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h4>Total Entries</h4>
+                        <p id="totalEntries" class="stat-value">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Average CO₂</h4>
+                        <p id="avgCarbon" class="stat-value">0 kg/day</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Weekly Average</h4>
+                        <p id="weeklyAvg" class="stat-value">0 kg/day</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="carbonChart"></canvas>
+                </div>
+                
+                <div class="history-container">
+                    <h3>History</h3>
+                    <div id="historyList" class="history-list"></div>
+                </div>
+                
+                <button onclick="clearHistory()" class="btn-danger">Clear History</button>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>🌿 EcoTrack - Making the world greener, one step at a time</p>
+            <p class="footer-user">Logged in as: <span id="currentUser"></span></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
