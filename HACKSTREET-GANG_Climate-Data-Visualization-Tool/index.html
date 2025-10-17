@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Intelligence Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #0a9396;
+            --primary-dark: #005f73;
+            --secondary: #94d2bd;
+            --accent: #ee9b00; 
+            --danger: #ae2012;
+            --warning: #ca6702;
+            --success: #4c956c;
+            --dark: #001219;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a9396 0%, #005f73 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .earth-loader {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .earth {
+            width: 100%;
+            height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Earth_Western_Hemisphere_transparent_background.png/480px-Earth_Western_Hemisphere_transparent_background.png') center/cover no-repeat;
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+            box-shadow: 0 0 20px rgba(10, 147, 150, 0.5);
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            margin-top: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .tagline {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .live-stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(10, 147, 150, 0.1);
+            border-radius: 8px;
+        }
+
+        .stat-item i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(10, 147, 150, 0.05);
+            padding: 0 1.5rem;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .controls-panel {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 180px;
+        }
+
+        .control-item label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .modern-select, .modern-input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .modern-select:focus, .modern-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 147, 150, 0.1);
+        }
+
+        .range-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .modern-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .modern-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .voice-btn {
+            background: rgba(10, 147, 150, 0.1);
+            color: var(--primary);
+        }
+
+        .export-btn {
+            background: rgba(148, 210, 189, 0.2);
+            color: var(--success);
+        }
+
+        .share-btn {
+            background: rgba(238, 155, 0, 0.1);
+            color: var(--accent);
+        }
+
+        .fullscreen-btn {
+            background: rgba(108, 117, 125, 0.1);
+            color: var(--gray);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chart-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(10, 147, 150, 0.05);
+        }
+
+        .metric-card.critical {
+            border-left: 4px solid var(--danger);
+        }
+
+        .metric-card.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .metric-card.info {
+            border-left: 4px solid var(--primary);
+        }
+
+        .metric-card.danger {
+            border-left: 4px solid var(--accent);
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .metric-card.critical .metric-icon {
+            background: rgba(174, 32, 18, 0.1);
+            color: var(--danger);
+        }
+
+        .metric-card.warning .metric-icon {
+            background: rgba(202, 103, 2, 0.1);
+            color: var(--warning);
+        }
+
+        .metric-card.info .metric-icon {
+            background: rgba(10, 147, 150, 0.1);
+            color: var(--primary);
+        }
+
+        .metric-card.danger .metric-icon {
+            background: rgba(238, 155, 0, 0.1);
+            color: var(--accent);
+        }
+
+        .metric-content {
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-trend {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .metric-trend.up {
+            color: var(--danger);
+        }
+
+        .metric-trend.down {
+            color: var(--success);
+        }
+
+        .map-container, .heatmap {
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+
+        /* Temperature Anomaly Visualization Styles */
+        .temperature-anomaly-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .globe-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .globe {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #1e5799, #207cca 50%, #2989d8 70%, #7db9e8 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 100, 200, 0.5);
+            transform-style: preserve-3d;
+            animation: rotateGlobe 60s infinite linear;
+        }
+
+        @keyframes rotateGlobe {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .temperature-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 0, 0, 0.3) 0%, 
+                rgba(255, 100, 0, 0.2) 20%, 
+                rgba(255, 255, 0, 0.1) 40%, 
+                rgba(0, 255, 0, 0.1) 60%, 
+                rgba(0, 100, 255, 0.2) 80%, 
+                rgba(0, 0, 255, 0.3) 100%);
+            mix-blend-mode: overlay;
+            opacity: 0.7;
+        }
+
+        .hot-spot {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 50, 0, 0.7) 0%, rgba(255, 100, 0, 0.3) 70%, transparent 100%);
+            filter: blur(5px);
+            animation: pulse 3s infinite alternate;
+        }
+
+        .hot-spot:nth-child(1) {
+            top: 20%;
+            left: 60%;
+            width: 80px;
+            height: 80px;
+        }
+
+        .hot-spot:nth-child(2) {
+            top: 50%;
+            left: 20%;
+            width: 50px;
+            height: 50px;
+        }
+
+        .hot-spot:nth-child(3) {
+            top: 70%;
+            left: 70%;
+            width: 70px;
+            height: 70px;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.7; }
+            to { transform: scale(1.2); opacity: 0.9; }
+        }
+
+        .anomaly-timeline {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            padding: 0 2rem;
+        }
+
+        .anomaly-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .anomaly-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .anomaly-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .anomaly-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .anomaly-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--dark);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .anomaly-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .anomaly-legend {
+            position: absolute;
+            bottom: 70px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.75rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 150px;
+        }
+
+        .legend-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .legend-scale {
+            height: 15px;
+            background: linear-gradient(to right, #1e3c72, #2a5298, #3a7bd5, #4ca1af, #a5e6ba, #ffeb3b, #ff9800, #f44336);
+            border-radius: 3px;
+        }
+
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+        }
+
+        /* End Temperature Anomaly Styles */
+
+        .predictions-grid, .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .prediction-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .prediction-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .prediction-metric {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .prediction-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .prediction-label {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence {
+            font-size: 0.8rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .heatmap-container {
+            position: relative;
+        }
+
+        .heatmap-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .heatmap-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .legend-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .legend-gradient {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .gradient-bar {
+            height: 20px;
+            width: 150px;
+            background: linear-gradient(to right, #2166ac, #67a9cf, #d1e5f0, #fddbc7, #f4a582, #d6604d, #b2182b);
+            border-radius: 4px;
+        }
+
+        .animate-btn {
+            background: rgba(10, 147, 150, 0.1);
+            color: var(--primary);
+        }
+
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .calculator-form {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .calculator-form h3 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .calculate-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .calculate-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .calculator-results {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .results-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .footprint-display {
+            margin-bottom: 1.5rem;
+        }
+
+        .footprint-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .footprint-unit {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+
+        .comparison {
+            margin-top: 1rem;
+        }
+
+        .comparison-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .comparison-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .recommendations {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .recommendations h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recommendations ul {
+            padding-left: 1.5rem;
+        }
+
+        .recommendations li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .impact-visualization {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .impact-visualization h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .impact-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .impact-card h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .impact-metric {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .impact-metric.high {
+            background: rgba(174, 32, 18, 0.1);
+            color: var(--danger);
+        }
+
+        .impact-metric.medium {
+            background: rgba(238, 155, 0, 0.1);
+            color: var(--accent);
+        }
+
+        .impact-description {
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        .footer {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .footer-section p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .pwa-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pwa-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .voice-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .achievement-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .achievement-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .achievement-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .achievement-content strong {
+            font-size: 0.9rem;
+        }
+
+        #achievementMessage {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        @media (max-width: 1024px) {
+            .calculator-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-main {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controls-panel {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controls-group {
+                width: 100%;
+            }
+
+            .control-item {
+                width: 100%;
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .predictions-grid, .impact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .globe {
+                width: 200px;
+                height: 200px;
+            }
+
+            .anomaly-controls {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+            }
+
+            .anomaly-legend {
+                bottom: 60px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="earth-loader">
+                <div class="earth"></div>
+            </div>
+            <h2>Climate Intelligence Pro</h2>
+            <p>Initializing advanced analytics...</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-text">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Control Indicator -->
+    <div id="voiceIndicator" class="voice-indicator hidden">
+        <i class="fas fa-microphone fa-spin"></i>
+        <span>Listening for commands...</span>
+    </div>
+
+    <!-- Achievement Toast -->
+    <div id="achievementToast" class="achievement-toast hidden">
+        <div class="achievement-icon">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div class="achievement-content">
+            <strong>Achievement Unlocked!</strong>
+            <span id="achievementMessage">Climate Explorer</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header with Stats -->
+        <header class="header">
+            <div class="header-main">
+                <div class="logo-section">
+                    <div class="logo">
+                        <i class="fas fa-globe-americas"></i>
+                        <h1>Climate Intelligence Pro</h1>
+                    </div>
+                    <p class="tagline">Advanced Climate Analytics & Prediction Platform</p>
+                </div>
+                <div class="live-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-thermometer-half"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="liveTemp">+1.2°C</span>
+                            <span class="stat-label">Global Warming</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-industry"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="liveCO2">421 ppm</span>
+                            <span class="stat-label">CO2 Levels</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-water"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="liveSea">+24 cm</span>
+                            <span class="stat-label">Sea Level Rise</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-tab" data-tab="predictions">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Predictions</span>
+                </button>
+                <button class="nav-tab" data-tab="heatmap">
+                    <i class="fas fa-map"></i>
+                    <span>Heat Map</span>
+                </button>
+                <button class="nav-tab" data-tab="calculator">
+                    <i class="fas fa-calculator"></i>
+                    <span>Carbon Calculator</span>
+                </button>
+                <button class="nav-tab" data-tab="impact">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Impact Analysis</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Controls Section -->
+        <section class="controls-panel">
+            <div class="controls-group">
+                <div class="control-item">
+                    <label for="regionSelect"><i class="fas fa-globe"></i> Region</label>
+                    <select id="regionSelect" class="modern-select">
+                        <option value="global">🌍 Global Overview</option>
+                        <option value="north_america">🇺🇸 North America</option>
+                        <option value="europe">🇪🇺 Europe</option>
+                        <option value="asia">🇨🇳 Asia</option>
+                        <option value="africa">🇿🇦 Africa</option>
+                        <option value="south_america">🇧🇷 South America</option>
+                        <option value="oceania">🇦🇺 Oceania</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label for="timeRange">Time Range</label>
+                    <div class="range-container">
+                        <input type="range" id="timeRange" min="1990" max="2030" value="2024" class="modern-slider">
+                        <div class="range-labels">
+                            <span>1990</span>
+                            <span id="currentYear">2024</span>
+                            <span>2030</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-item">
+                    <label for="dataType">Data Type</label>
+                    <select id="dataType" class="modern-select">
+                        <option value="temperature">🌡️ Temperature</option>
+                        <option value="co2">🏭 CO2 Emissions</option>
+                        <option value="precipitation">🌧️ Precipitation</option>
+                        <option value="sea_level">🌊 Sea Level</option>
+                        <option value="extreme_events">🌀 Extreme Events</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="voiceControl" class="action-btn voice-btn">
+                    <i class="fas fa-microphone"></i>
+                    Voice Control
+                </button>
+                <button id="exportData" class="action-btn export-btn">
+                    <i class="fas fa-download"></i>
+                    Export Data
+                </button>
+                <button id="shareDashboard" class="action-btn share-btn">
+                    <i class="fas fa-share-alt"></i>
+                    Share
+                </button>
+                <button id="fullscreenBtn" class="action-btn fullscreen-btn">
+                    <i class="fas fa-expand"></i>
+                    Fullscreen
+                </button>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <div class="charts-grid">
+                    <!-- Climate Timeline -->
+                    <div class="chart-card full-width">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-timeline"></i> Climate Timeline Analysis</h3>
+                            <div class="chart-actions">
+                                <button class="chart-btn active" data-metric="temperature">Temperature</button>
+                                <button class="chart-btn" data-metric="co2">CO2 Levels</button>
+                                <button class="chart-btn" data-metric="sea">Sea Level</button>
+                            </div>
+                        </div>
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+
+                    <!-- Real-time Metrics Grid -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-gauge-high"></i> Real-time Climate Metrics</h3>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card critical">
+                                <div class="metric-icon">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="metricTemp">+1.27°C</div>
+                                    <div class="metric-label">Global Temp Rise</div>
+                                    <div class="metric-trend up">+0.02°C/yr</div>
+                                </div>
+                            </div>
+                            <div class="metric-card warning">
+                                <div class="metric-icon">
+                                    <i class="fas fa-industry"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="metricCO2">421 ppm</div>
+                                    <div class="metric-label">CO2 Concentration</div>
+                                    <div class="metric-trend up">+2.5 ppm/yr</div>
+                                </div>
+                            </div>
+                            <div class="metric-card info">
+                                <div class="metric-icon">
+                                    <i class="fas fa-water"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="metricSea">+24 cm</div>
+                                    <div class="metric-label">Sea Level Rise</div>
+                                    <div class="metric-trend up">+3.4 mm/yr</div>
+                                </div>
+                            </div>
+                            <div class="metric-card danger">
+                                <div class="metric-icon">
+                                    <i class="fas fa-snowflake"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="metricIce">-13.1%</div>
+                                    <div class="metric-label">Arctic Ice Loss</div>
+                                    <div class="metric-trend down">-0.8%/yr</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Regional Comparison -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-bar"></i> Regional Impact Score</h3>
+                        </div>
+                        <canvas id="regionalChart"></canvas>
+                    </div>
+
+                    <!-- Extreme Events Tracker -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-tornado"></i> Extreme Events Trend</h3>
+                        </div>
+                        <canvas id="eventsChart"></canvas>
+                    </div>
+
+                    <!-- Carbon Concentration -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-cloud"></i> Atmospheric CO2</h3>
+                        </div>
+                        <canvas id="co2Chart"></canvas>
+                    </div>
+
+                    <!-- Temperature Anomaly Map -->
+                    <div class="chart-card full-width">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-map-marked-alt"></i> Global Temperature Anomalies</h3>
+                        </div>
+                        <div class="temperature-anomaly-container">
+                            <div class="globe-container">
+                                <div class="globe">
+                                    <div class="temperature-overlay"></div>
+                                    <div class="hot-spot"></div>
+                                    <div class="hot-spot"></div>
+                                    <div class="hot-spot"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="anomaly-controls">
+                                <button class="anomaly-btn" id="playAnomaly">
+                                    <i class="fas fa-play"></i> Play
+                                </button>
+                                <button class="anomaly-btn" id="pauseAnomaly">
+                                    <i class="fas fa-pause"></i> Pause
+                                </button>
+                            </div>
+                            
+                            <div class="anomaly-legend">
+                                <div class="legend-title">Temperature Anomaly (°C)</div>
+                                <div class="legend-scale"></div>
+                                <div class="legend-labels">
+                                    <span>-2°C</span>
+                                    <span>0°C</span>
+                                    <span>+2°C</span>
+                                </div>
+                            </div>
+                            
+                            <div class="anomaly-timeline">
+                                <input type="range" min="1880" max="2023" value="2023" class="anomaly-slider" id="yearSlider">
+                                <div class="anomaly-labels">
+                                    <span>1880</span>
+                                    <span>1950</span>
+                                    <span>2023</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Predictions Tab -->
+            <div id="predictionsTab" class="tab-content">
+                <div class="predictions-grid">
+                    <div class="prediction-card full-width">
+                        <div class="prediction-header">
+                            <h3><i class="fas fa-brain"></i> AI Climate Predictions 2030</h3>
+                            <div class="prediction-controls">
+                                <label class="switch">
+                                    <input type="checkbox" id="showPredictions" checked>
+                                    <span class="slider"></span>
+                                </label>
+                                <span>Show Predictions</span>
+                            </div>
+                        </div>
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+
+                    <div class="prediction-card">
+                        <h4><i class="fas fa-temperature-high"></i> Temperature Forecast</h4>
+                        <div class="prediction-metric">
+                            <div class="prediction-value">+1.8°C</div>
+                            <div class="prediction-label">by 2030</div>
+                            <div class="confidence">85% confidence</div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <h4><i class="fas fa-water"></i> Sea Level Projection</h4>
+                        <div class="prediction-metric">
+                            <div class="prediction-value">+38 cm</div>
+                            <div class="prediction-label">by 2030</div>
+                            <div class="confidence">78% confidence</div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <h4><i class="fas fa-wind"></i> Extreme Events</h4>
+                        <div class="prediction-metric">
+                            <div class="prediction-value">+45%</div>
+                            <div class="prediction-label">increase</div>
+                            <div class="confidence">82% confidence</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heat Map Tab -->
+            <div id="heatmapTab" class="tab-content">
+                <div class="heatmap-container">
+                    <div id="globalHeatMap" class="heatmap">
+                        <p>Global heat map visualization would appear here</p>
+                    </div>
+                    <div class="heatmap-controls">
+                        <div class="heatmap-legend">
+                            <div class="legend-title">Temperature Anomaly (°C)</div>
+                            <div class="legend-gradient">
+                                <span>-2°C</span>
+                                <div class="gradient-bar"></div>
+                                <span>+2°C</span>
+                            </div>
+                        </div>
+                        <button id="animateHeatmap" class="action-btn animate-btn">
+                            <i class="fas fa-play"></i>
+                            Animate Timeline
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carbon Calculator Tab -->
+            <div id="calculatorTab" class="tab-content">
+                <div class="calculator-container">
+                    <div class="calculator-form">
+                        <h3><i class="fas fa-carbon-footprint"></i> Personal Carbon Footprint Calculator</h3>
+                        
+                        <div class="input-section">
+                            <div class="input-group">
+                                <label for="transport"><i class="fas fa-car"></i> Transportation (km/week)</label>
+                                <input type="number" id="transport" value="150" min="0" class="modern-input">
+                                <div class="input-hint">Car, bus, train, flights</div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="energy"><i class="fas fa-bolt"></i> Energy Usage (kWh/month)</label>
+                                <input type="number" id="energy" value="300" min="0" class="modern-input">
+                                <div class="input-hint">Home electricity consumption</div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="diet"><i class="fas fa-utensils"></i> Diet Type</label>
+                                <select id="diet" class="modern-select">
+                                    <option value="vegan">🌱 Vegan</option>
+                                    <option value="vegetarian">🥬 Vegetarian</option>
+                                    <option value="meat_low">🍗 Low Meat</option>
+                                    <option value="meat_high">🥩 High Meat</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="shopping"><i class="fas fa-shopping-bag"></i> Shopping Habits</label>
+                                <select id="shopping" class="modern-select">
+                                    <option value="minimal">📦 Minimal</option>
+                                    <option value="average">🛍️ Average</option>
+                                    <option value="high">🎁 High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="calculateBtn" class="calculate-button">
+                            <i class="fas fa-calculator"></i>
+                            Calculate My Footprint
+                        </button>
+                    </div>
+
+                    <div class="calculator-results">
+                        <div class="results-card">
+                            <div class="footprint-display">
+                                <div class="footprint-value" id="footprintResult">0.0</div>
+                                <div class="footprint-unit">tons CO2/year</div>
+                            </div>
+                            <div class="comparison" id="footprintComparison">
+                                <div class="comparison-bar">
+                                    <div class="user-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="comparison-labels">
+                                    <span>Your Footprint</span>
+                                    <span>Global Average: 4.8t</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="recommendations">
+                            <h4><i class="fas fa-lightbulb"></i> Reduction Recommendations</h4>
+                            <ul id="recommendationsList">
+                                <li>Switch to renewable energy sources</li>
+                                <li>Use public transportation or carpool</li>
+                                <li>Reduce meat consumption</li>
+                                <li>Improve home insulation</li>
+                            </ul>
+                        </div>
+
+                        <div class="impact-visualization">
+                            <h4><i class="fas fa-chart-pie"></i> Impact Breakdown</h4>
+                            <canvas id="impactChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impact Analysis Tab -->
+            <div id="impactTab" class="tab-content">
+                <div class="impact-grid">
+                    <div class="impact-card full-width">
+                        <h3><i class="fas fa-chart-network"></i> Climate Impact Correlation Analysis</h3>
+                        <canvas id="correlationChart"></canvas>
+                    </div>
+
+                    <div class="impact-card">
+                        <h4><i class="fas fa-seedling"></i> Biodiversity Impact</h4>
+                        <div class="impact-metric high">High Risk</div>
+                        <div class="impact-description">25% species at extinction risk</div>
+                    </div>
+
+                    <div class="impact-card">
+                        <h4><i class="fas fa-heartbeat"></i> Health Impact</h4>
+                        <div class="impact-metric medium">Medium Risk</div>
+                        <div class="impact-description">Increased respiratory diseases</div>
+                    </div>
+
+                    <div class="impact-card">
+                        <h4><i class="fas fa-city"></i> Economic Impact</h4>
+                        <div class="impact-metric high">High Risk</div>
+                        <div class="impact-description">$300B annual climate costs</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Data Sources</h4>
+                    <p>NASA • NOAA • IPCC • World Bank • OpenWeather</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Last Updated</h4>
+                    <p id="lastUpdateTime">Loading...</p>
+                </div>
+                <div class="footer-section">
+                    <button id="installPWA" class="pwa-button">
+                        <i class="fas fa-download"></i>
+                        Install App
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Global variables to track current state
+        let currentRegion = 'global';
+        let currentDataType = 'temperature';
+        let currentYear = 2024;
+        let chartInstances = {};
+
+        // Simulate loading progress
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const progressFill = document.querySelector('.progress-fill');
+            const progressText = document.querySelector('.progress-text');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.classList.add('hidden');
+                        }, 500);
+                    }, 500);
+                }
+                
+                progressFill.style.width = `${progress}%`;
+                progressText.textContent = `${Math.round(progress)}%`;
+            }, 200);
+            
+            // Set last updated time
+            document.getElementById('lastUpdateTime').textContent = new Date().toLocaleString();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize temperature anomaly visualization
+            initializeTemperatureAnomaly();
+        });
+
+        // Sample data for different regions
+        const regionData = {
+            global: {
+                temperature: [0.3, 0.4, 0.5, 0.65, 0.75, 0.9, 1.1, 1.27],
+                co2: [354, 360, 369, 379, 389, 400, 412, 421],
+                seaLevel: [0, 2, 4, 7, 10, 15, 20, 24],
+                impactScore: [7.2, 6.8, 8.5, 9.1, 7.9, 6.5],
+                events: [220, 240, 280, 320, 380, 450, 520, 610]
+            },
+            north_america: {
+                temperature: [0.2, 0.3, 0.4, 0.55, 0.65, 0.8, 1.0, 1.17],
+                co2: [340, 350, 360, 370, 380, 390, 400, 410],
+                seaLevel: [0, 1, 3, 6, 9, 13, 18, 22],
+                impactScore: [7.2, 6.5, 7.8, 8.2, 7.5, 6.2],
+                events: [180, 200, 230, 270, 320, 380, 440, 510]
+            },
+            europe: {
+                temperature: [0.25, 0.35, 0.45, 0.6, 0.7, 0.85, 1.05, 1.22],
+                co2: [350, 355, 365, 375, 385, 395, 405, 415],
+                seaLevel: [0, 1, 3, 6, 9, 14, 19, 23],
+                impactScore: [6.8, 6.2, 7.5, 8.0, 7.3, 6.0],
+                events: [150, 170, 200, 240, 290, 350, 410, 480]
+            },
+            asia: {
+                temperature: [0.35, 0.45, 0.55, 0.7, 0.8, 0.95, 1.15, 1.32],
+                co2: [360, 370, 380, 390, 400, 410, 420, 430],
+                seaLevel: [0, 2, 5, 8, 12, 17, 22, 26],
+                impactScore: [8.5, 7.8, 9.2, 9.6, 8.9, 7.6],
+                events: [250, 280, 320, 370, 430, 500, 580, 670]
+            },
+            africa: {
+                temperature: [0.4, 0.5, 0.6, 0.75, 0.85, 1.0, 1.2, 1.37],
+                co2: [330, 340, 350, 360, 370, 380, 390, 400],
+                seaLevel: [0, 2, 4, 7, 11, 16, 21, 25],
+                impactScore: [9.1, 8.4, 9.8, 10.2, 9.5, 8.2],
+                events: [200, 230, 270, 320, 380, 450, 530, 620]
+            },
+            south_america: {
+                temperature: [0.3, 0.4, 0.5, 0.65, 0.75, 0.9, 1.1, 1.27],
+                co2: [345, 355, 365, 375, 385, 395, 405, 415],
+                seaLevel: [0, 1, 3, 6, 10, 15, 20, 24],
+                impactScore: [7.9, 7.2, 8.5, 9.0, 8.3, 7.0],
+                events: [170, 190, 220, 260, 310, 370, 440, 520]
+            },
+            oceania: {
+                temperature: [0.25, 0.35, 0.45, 0.6, 0.7, 0.85, 1.05, 1.22],
+                co2: [348, 358, 368, 378, 388, 398, 408, 418],
+                seaLevel: [0, 2, 4, 7, 11, 16, 21, 25],
+                impactScore: [6.5, 5.8, 7.1, 7.6, 6.9, 5.6],
+                events: [140, 160, 190, 230, 280, 340, 410, 490]
+            }
+        };
+
+        function initializeCharts() {
+            // Timeline Chart
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            chartInstances.timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2024'],
+                    datasets: [{
+                        label: 'Global Temperature Anomaly (°C)',
+                        data: regionData.global.temperature,
+                        borderColor: '#ae2012',
+                        backgroundColor: 'rgba(174, 32, 18, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Global Temperature Rise Since 1990'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Temperature Anomaly (°C)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Regional Chart
+            const regionalCtx = document.getElementById('regionalChart').getContext('2d');
+            chartInstances.regionalChart = new Chart(regionalCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['North America', 'Europe', 'Asia', 'Africa', 'South America', 'Oceania'],
+                    datasets: [{
+                        label: 'Climate Impact Score',
+                        data: regionData.global.impactScore,
+                        backgroundColor: [
+                            'rgba(10, 147, 150, 0.7)',
+                            'rgba(148, 210, 189, 0.7)',
+                            'rgba(238, 155, 0, 0.7)',
+                            'rgba(174, 32, 18, 0.7)',
+                            'rgba(202, 103, 2, 0.7)',
+                            'rgba(76, 149, 108, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: 'Impact Score'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Events Chart
+            const eventsCtx = document.getElementById('eventsChart').getContext('2d');
+            chartInstances.eventsChart = new Chart(eventsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2024'],
+                    datasets: [{
+                        label: 'Extreme Weather Events',
+                        data: regionData.global.events,
+                        borderColor: '#ca6702',
+                        backgroundColor: 'rgba(202, 103, 2, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Increase in Extreme Weather Events'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Events'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // CO2 Chart
+            const co2Ctx = document.getElementById('co2Chart').getContext('2d');
+            chartInstances.co2Chart = new Chart(co2Ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2024'],
+                    datasets: [{
+                        label: 'Atmospheric CO2 (ppm)',
+                        data: regionData.global.co2,
+                        borderColor: '#005f73',
+                        backgroundColor: 'rgba(0, 95, 115, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Atmospheric CO2 Concentration'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'CO2 (ppm)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Prediction Chart
+            const predictionCtx = document.getElementById('predictionChart').getContext('2d');
+            chartInstances.predictionChart = new Chart(predictionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2022', '2024', '2026', '2028', '2030'],
+                    datasets: [{
+                        label: 'Historical Data',
+                        data: [1.1, 1.18, 1.27, null, null, null],
+                        borderColor: '#ae2012',
+                        backgroundColor: 'rgba(174, 32, 18, 0.1)',
+                        tension: 0.3,
+                        fill: false
+                    }, {
+                        label: 'AI Prediction',
+                        data: [null, null, 1.27, 1.45, 1.62, 1.8],
+                        borderColor: '#ee9b00',
+                        backgroundColor: 'rgba(238, 155, 0, 0.1)',
+                        borderDash: [5, 5],
+                        tension: 0.3,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Temperature Projection to 2030'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Temperature Anomaly (°C)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Impact Chart for Carbon Calculator
+            const impactCtx = document.getElementById('impactChart').getContext('2d');
+            chartInstances.impactChart = new Chart(impactCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Transportation', 'Home Energy', 'Food', 'Goods & Services'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: [
+                            'rgba(10, 147, 150, 0.7)',
+                            'rgba(148, 210, 189, 0.7)',
+                            'rgba(238, 155, 0, 0.7)',
+                            'rgba(174, 32, 18, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Correlation Chart
+            const correlationCtx = document.getElementById('correlationChart').getContext('2d');
+            chartInstances.correlationChart = new Chart(correlationCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Temperature vs CO2',
+                        data: [
+                            {x: 354, y: 0.3},
+                            {x: 360, y: 0.4},
+                            {x: 369, y: 0.5},
+                            {x: 379, y: 0.65},
+                            {x: 389, y: 0.75},
+                            {x: 400, y: 0.9},
+                            {x: 412, y: 1.1},
+                            {x: 421, y: 1.27}
+                        ],
+                        backgroundColor: 'rgba(10, 147, 150, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Correlation: CO2 vs Temperature'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'CO2 Concentration (ppm)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Temperature Anomaly (°C)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Tab navigation
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and contents
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab') + 'Tab';
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Show achievement toast when switching to certain tabs
+                    if (tabId === 'predictionsTab') {
+                        showAchievement('AI Prediction Explorer');
+                    } else if (tabId === 'calculatorTab') {
+                        showAchievement('Climate Action Champion');
+                    }
+                });
+            });
+            
+            // Timeline chart metric buttons
+            const chartBtns = document.querySelectorAll('.chart-btn');
+            chartBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    chartBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Update the timeline chart based on selected metric
+                    const metric = btn.getAttribute('data-metric');
+                    updateTimelineChart(metric);
+                });
+            });
+            
+            // Region selector
+            const regionSelect = document.getElementById('regionSelect');
+            regionSelect.addEventListener('change', function() {
+                currentRegion = this.value;
+                updateAllCharts();
+                
+                // Update header stats based on region
+                updateHeaderStats();
+            });
+            
+            // Data type selector
+            const dataTypeSelect = document.getElementById('dataType');
+            dataTypeSelect.addEventListener('change', function() {
+                currentDataType = this.value;
+                updateAllCharts();
+            });
+            
+            // Time range slider
+            const timeRange = document.getElementById('timeRange');
+            const currentYearSpan = document.getElementById('currentYear');
+            timeRange.addEventListener('input', function() {
+                currentYear = parseInt(this.value);
+                currentYearSpan.textContent = currentYear;
+                updateAllCharts();
+            });
+            
+            // Voice control button
+            const voiceControl = document.getElementById('voiceControl');
+            const voiceIndicator = document.getElementById('voiceIndicator');
+            voiceControl.addEventListener('click', () => {
+                voiceIndicator.classList.toggle('hidden');
+                // In a real app, this would start/stop voice recognition
+            });
+            
+            // Fullscreen button
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
+            // Carbon calculator
+            const calculateBtn = document.getElementById('calculateBtn');
+            calculateBtn.addEventListener('click', calculateFootprint);
+            
+            // Export data button
+            const exportBtn = document.getElementById('exportData');
+            exportBtn.addEventListener('click', () => {
+                alert('Data export functionality would be implemented here');
+            });
+            
+            // Share dashboard button
+            const shareBtn = document.getElementById('shareDashboard');
+            shareBtn.addEventListener('click', () => {
+                alert('Share functionality would be implemented here');
+            });
+            
+            // Animate heatmap button
+            const animateBtn = document.getElementById('animateHeatmap');
+            animateBtn.addEventListener('click', () => {
+                alert('Heatmap animation would start here');
+            });
+            
+            // Install PWA button
+            const installBtn = document.getElementById('installPWA');
+            installBtn.addEventListener('click', () => {
+                alert('PWA installation would be triggered here');
+            });
+        }
+
+        function updateAllCharts() {
+            updateTimelineChart(currentDataType);
+            updateRegionalChart();
+            updateEventsChart();
+            updateCO2Chart();
+        }
+
+        function updateTimelineChart(metric) {
+            const chart = chartInstances.timelineChart;
+            const data = regionData[currentRegion][metric];
+            
+            // Update chart data
+            chart.data.datasets[0].data = data;
+            
+            // Update chart labels and colors based on metric
+            let label, color, backgroundColor;
+            
+            switch(metric) {
+                case 'temperature':
+                    label = `${getRegionName(currentRegion)} Temperature Anomaly (°C)`;
+                    color = '#ae2012';
+                    backgroundColor = 'rgba(174, 32, 18, 0.1)';
+                    break;
+                case 'co2':
+                    label = `${getRegionName(currentRegion)} CO2 Levels (ppm)`;
+                    color = '#005f73';
+                    backgroundColor = 'rgba(0, 95, 115, 0.1)';
+                    break;
+                case 'sea':
+                    label = `${getRegionName(currentRegion)} Sea Level Rise (cm)`;
+                    color = '#0a9396';
+                    backgroundColor = 'rgba(10, 147, 150, 0.1)';
+                    break;
+            }
+            
+            chart.data.datasets[0].label = label;
+            chart.data.datasets[0].borderColor = color;
+            chart.data.datasets[0].backgroundColor = backgroundColor;
+            
+            // Update chart title
+            chart.options.plugins.title.text = `${getRegionName(currentRegion)} ${getMetricName(metric)} Since 1990`;
+            
+            chart.update();
+        }
+
+        function updateRegionalChart() {
+            const chart = chartInstances.regionalChart;
+            const data = regionData[currentRegion].impactScore;
+            
+            chart.data.datasets[0].data = data;
+            chart.update();
+        }
+
+        function updateEventsChart() {
+            const chart = chartInstances.eventsChart;
+            const data = regionData[currentRegion].events;
+            
+            chart.data.datasets[0].data = data;
+            chart.options.plugins.title.text = `${getRegionName(currentRegion)} Extreme Weather Events`;
+            chart.update();
+        }
+
+        function updateCO2Chart() {
+            const chart = chartInstances.co2Chart;
+            const data = regionData[currentRegion].co2;
+            
+            chart.data.datasets[0].data = data;
+            chart.options.plugins.title.text = `${getRegionName(currentRegion)} CO2 Concentration`;
+            chart.update();
+        }
+
+        function updateHeaderStats() {
+            const region = currentRegion;
+            const tempData = regionData[region].temperature;
+            const co2Data = regionData[region].co2;
+            const seaData = regionData[region].seaLevel;
+            
+            // Update temperature
+            document.getElementById('liveTemp').textContent = `+${tempData[tempData.length - 1].toFixed(1)}°C`;
+            document.getElementById('metricTemp').textContent = `+${tempData[tempData.length - 1].toFixed(2)}°C`;
+            
+            // Update CO2
+            document.getElementById('liveCO2').textContent = `${co2Data[co2Data.length - 1]} ppm`;
+            document.getElementById('metricCO2').textContent = `${co2Data[co2Data.length - 1]} ppm`;
+            
+            // Update sea level
+            document.getElementById('liveSea').textContent = `+${seaData[seaData.length - 1]} cm`;
+            document.getElementById('metricSea').textContent = `+${seaData[seaData.length - 1]} cm`;
+        }
+
+        function getRegionName(region) {
+            const names = {
+                global: 'Global',
+                north_america: 'North America',
+                europe: 'Europe',
+                asia: 'Asia',
+                africa: 'Africa',
+                south_america: 'South America',
+                oceania: 'Oceania'
+            };
+            return names[region] || 'Global';
+        }
+
+        function getMetricName(metric) {
+            const names = {
+                temperature: 'Temperature Rise',
+                co2: 'CO2 Levels',
+                sea: 'Sea Level Rise'
+            };
+            return names[metric] || 'Temperature Rise';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function calculateFootprint() {
+            const transport = parseInt(document.getElementById('transport').value) || 0;
+            const energy = parseInt(document.getElementById('energy').value) || 0;
+            const diet = document.getElementById('diet').value;
+            const shopping = document.getElementById('shopping').value;
+            
+            // Simplified calculation (not scientifically accurate)
+            let footprint = 0;
+            
+            // Transportation: 0.2 kg CO2 per km
+            footprint += transport * 52 * 0.2 / 1000; // Convert to tons per year
+            
+            // Energy: 0.5 kg CO2 per kWh
+            footprint += energy * 12 * 0.5 / 1000; // Convert to tons per year
+            
+            // Diet factors
+            const dietFactors = {
+                vegan: 1.5,
+                vegetarian: 2.0,
+                meat_low: 2.5,
+                meat_high: 3.5
+            };
+            footprint += dietFactors[diet];
+            
+            // Shopping factors
+            const shoppingFactors = {
+                minimal: 0.5,
+                average: 1.0,
+                high: 2.0
+            };
+            footprint += shoppingFactors[shopping];
+            
+            // Update display
+            document.getElementById('footprintResult').textContent = footprint.toFixed(1);
+            
+            // Update comparison bar
+            const userBar = document.querySelector('.user-bar');
+            const percentage = Math.min((footprint / 10) * 100, 100);
+            userBar.style.width = `${percentage}%`;
+            
+            // Show achievement if footprint is low
+            if (footprint < 4) {
+                showAchievement('Eco Warrior');
+            }
+        }
+
+        function showAchievement(message) {
+            const toast = document.getElementById('achievementToast');
+            const messageEl = document.getElementById('achievementMessage');
+            
+            messageEl.textContent = message;
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Temperature Anomaly Visualization
+        function initializeTemperatureAnomaly() {
+            // Simulate temperature data
+            const temperatureData = [
+                { year: 1880, anomaly: -0.2 },
+                { year: 1900, anomaly: -0.1 },
+                { year: 1920, anomaly: -0.15 },
+                { year: 1940, anomaly: 0.1 },
+                { year: 1960, anomaly: 0.05 },
+                { year: 1980, anomaly: 0.2 },
+                { year: 2000, anomaly: 0.45 },
+                { year: 2020, anomaly: 1.0 },
+                { year: 2023, anomaly: 1.2 }
+            ];
+
+            // DOM elements
+            const yearSlider = document.getElementById('yearSlider');
+            const playBtn = document.getElementById('playAnomaly');
+            const pauseBtn = document.getElementById('pauseAnomaly');
+            const globe = document.querySelector('.globe');
+            const temperatureOverlay = document.querySelector('.temperature-overlay');
+            const hotSpots = document.querySelectorAll('.hot-spot');
+
+            let animationInterval;
+
+            // Update visualization based on selected year
+            yearSlider.addEventListener('input', function() {
+                const year = parseInt(this.value);
+                updateAnomalyVisualization(year);
+            });
+
+            // Play animation
+            playBtn.addEventListener('click', function() {
+                let year = 1880;
+                clearInterval(animationInterval);
+                
+                animationInterval = setInterval(() => {
+                    yearSlider.value = year;
+                    updateAnomalyVisualization(year);
+                    year += 5;
+                    
+                    if (year > 2023) {
+                        clearInterval(animationInterval);
+                    }
+                }, 300);
+            });
+
+            // Pause animation
+            pauseBtn.addEventListener('click', function() {
+                clearInterval(animationInterval);
+            });
+
+            // Update visualization based on year
+            function updateAnomalyVisualization(year) {
+                // Find the closest data point
+                const dataPoint = temperatureData.reduce((prev, curr) => {
+                    return (Math.abs(curr.year - year) < Math.abs(prev.year - year) ? curr : prev);
+                });
+                
+                // Update hot spots intensity based on temperature anomaly
+                const intensity = Math.min(Math.max((dataPoint.anomaly + 2) / 4, 0.1), 1);
+                
+                hotSpots.forEach(spot => {
+                    spot.style.opacity = intensity;
+                    spot.style.transform = `scale(${0.8 + intensity * 0.4})`;
+                });
+                
+                // Update globe color based on temperature
+                const tempColor = getTemperatureColor(dataPoint.anomaly);
+                globe.style.background = `radial-gradient(circle at 30% 30%, ${tempColor} 0%, #207cca 50%, #2989d8 70%, #7db9e8 100%)`;
+            }
+
+            // Get color based on temperature anomaly
+            function getTemperatureColor(anomaly) {
+                if (anomaly < -1) return '#1e3c72';
+                if (anomaly < -0.5) return '#2a5298';
+                if (anomaly < 0) return '#3a7bd5';
+                if (anomaly < 0.5) return '#4ca1af';
+                if (anomaly < 1) return '#a5e6ba';
+                if (anomaly < 1.5) return '#ffeb3b';
+                if (anomaly < 2) return '#ff9800';
+                return '#f44336';
+            }
+
+            // Initialize visualization
+            updateAnomalyVisualization(2023);
+        }
+    </script>
+</body>
+</html>
